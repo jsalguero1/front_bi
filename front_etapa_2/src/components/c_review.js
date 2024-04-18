@@ -12,17 +12,14 @@ function ReviewInputManager() {
   };
 
   const calculateCertainty = (probabilidad) => {
-    if (probabilidad >= 0.80)
+    if (probabilidad >= 0.65)
       return { text: 'Muy alta', color: 'blue' };
-      else if (probabilidad >= 0.60) {
+      else if (0.5 <= probabilidad <= 0.64) {
       return { text: 'Alta', color: 'green' };
-    } else if (probabilidad >= 0.40) {
+    } else if (0.35 <= probabilidad <= 0.49) {
       return { text: 'Media', color: 'gray' };
-    } else if (probabilidad >= 0.20) {
+    } else if (0.2 <= probabilidad <= 0.34) {
       return { text: 'Baja', color: 'orange' };
-    } else {
-      return { text: 'Muy baja', color: 'red' };
-    }
   };
 
   const initial_state = [{ id: 1, texto: '', resultado: null, probabilidad: null }];
