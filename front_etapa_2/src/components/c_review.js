@@ -1,8 +1,29 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './c_review.css'
+import { InformationPopup } from './informationPopup';
 
 function ReviewInputManager() {
+
+  const [showPopup, setShowPopup] = useState(false);
+
+  const handleMoreInfoClick = () => {
+    setShowPopup(true);
+  };
+
+  const calculateCertainty = (probabilidad) => {
+    if (probabilidad >= 0.80)
+      return { text: 'Muy alta', color: 'blue' };
+      else if (probabilidad >= 0.60) {
+      return { text: 'Alta', color: 'green' };
+    } else if (probabilidad >= 0.40) {
+      return { text: 'Media', color: 'gray' };
+    } else if (probabilidad >= 0.20) {
+      return { text: 'Baja', color: 'orange' };
+    } else {
+      return { text: 'Muy baja', color: 'red' };
+    }
+  };
 
   const initial_state = [{ id: 1, texto: '', resultado: null, probabilidad: null }];
   const [entradas, setEntradas] = useState(initial_state);
@@ -25,11 +46,20 @@ function ReviewInputManager() {
     setEntradas(entradas.filter(entrada => entrada.id !== id));
   };
 
+  const validateReviews = () => {
+    return entradas.some(entrada => !entrada.texto.trim());
+  };
+  
   const handleSubmit = () => {
+    if (validateReviews()) {
+      alert('No es posible enviar una reseña vacía');
+      return;
+    }
+  
     const api_url = 'http://localhost:8000/predict_probs';
     const datos_resenas = {
       Review: entradas.map(entrada => entrada.texto),
-      Class: entradas.map(entrada => 0), // Asegúrate de ajustar este valor según la lógica de tu backend
+      Class: entradas.map(entrada => 0),
     };
     axios.post(api_url, datos_resenas)
       .then(respuesta => {
@@ -45,11 +75,16 @@ function ReviewInputManager() {
   };
 
   const updateResults = (predicciones, probabilidades) => {
-    setEntradas(entradas.map((entrada, indice) => ({
-      ...entrada,
-      resultado: predicciones[indice],
-      probabilidad: probabilidades[indice],
-    })));
+    setEntradas(entradas.map((entrada, indice) => {
+      const certainty = calculateCertainty(probabilidades[indice]);
+      return {
+        ...entrada,
+        probabilidad: probabilidades[indice],
+        resultado: predicciones[indice],
+        certeza: certainty.text,
+        colorCerteza: certainty.color,
+      };
+    }));
   };
 
   const handleResetClick = () => {
@@ -58,6 +93,9 @@ function ReviewInputManager() {
 
   return (
     <div id='container'>
+
+      <h2 id='resenas_title'>Reseñas a evaluar</h2>
+
       {entradas.map(entrada => (
         <div key={entrada.id} id='input_container'>
 
@@ -66,7 +104,7 @@ function ReviewInputManager() {
             type="text"
             value={entrada.texto}
             onChange={(e) => handleInputChange(entrada.id, e.target.value)}
-            placeholder="Ingrese su reseña aquí..."
+            placeholder="Escribe una reseña aquí..."
           />
           <button id='submit_button' onClick={() => handleRemoveClick(entrada.id)}>Eliminar reseña</button>
 
@@ -79,20 +117,34 @@ function ReviewInputManager() {
             </div>
 
             <div id='probabilidades'>
-              {entrada.probabilidad && <p><strong>Probabilidad:</strong> {Number(entrada.probabilidad).toFixed(2)}</p>}
+            {entrada.certeza && (
+              <p>
+                <strong>Certeza de la Predicción: </strong> 
+                <span style={{ color: entrada.colorCerteza }}>
+                  <strong>{entrada.certeza} ({entrada.probabilidad.toFixed(2)})</strong>
+                </span>
+              </p>
+            )}
             </div>
-
-          </div>
-          
+          </div>          
           </div>
       ))}
+      <div>
+          <button id='more_info_button' onClick={handleMoreInfoClick}>
+              ¿Quieres saber más sobre estos resultados?
+          </button>
+      </div>
+
+      {showPopup && <InformationPopup results={entradas} onClose={() => setShowPopup(false)} />}
+
       <div id='button_container'>
         <button id='add_button' onClick={handleAddClick}>+</button>
-        <p id='support_text'>Agregar otra reseña</p>
+        <p id='support_text'>Agrega otra reseña</p>
         <button id='send_reviews' onClick={handleSubmit}>Enviar Reseñas</button>
         {entradas.length > 1 && <button id='delete_reviews' onClick={handleResetClick}>Borrar Todo</button>}
       </div>
 
+      <p className='footer'>Aplicación web construida por Juan David Salguero, Juan Sebastián Pardo y Alonso Hernández Tavera - 2024</p>
     </div>
   );
 }

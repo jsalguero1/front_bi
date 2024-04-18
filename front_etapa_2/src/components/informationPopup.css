@@ -1,0 +1,42 @@
+/* InformationPopup.css */
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;;
+  }
+  
+  .popup-content {
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    width: 80%;
+    max-width: 600px;
+    overflow-y: auto;
+    margin-top: auto;
+    padding: 1.5%;
+  }
+
+  .close-button {
+    width: 50px;
+    margin-left: 90%;
+    margin-bottom: -5px;
+    background-color: #d74848;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  
+  .wordCloudImg {
+    width: 80%;
+    height: auto;
+  }
